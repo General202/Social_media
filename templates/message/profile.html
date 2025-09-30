@@ -1,27 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Профіль користувача {{ user.username }}</h1>
-<p>Email: {{ user.email }}</p>
+<p>{{ cover_image }}</p>
 <p>Дата приєднання: {{ user.date_joined }}</p>
 
-<h2>Повідомлення</h2>
-<ul>
-    {% for message in user.received_messages.all %}
-        <li>{{ message.content }} - від {{ message.sender }} о {{ message.timestamp }}</li>
-    {% endfor %}
-</ul>
 
 <h2>Пости</h2>
 <ul>
     {% for post in user.posts.all %}
         <li>{{ post.content }} - о {{ post.timestamp }}</li>
-    {% endfor %}
-</ul>
-
-<h2>Коментарі</h2>
-<ul>
-    {% for comment in user.comments.all %}
-        <li>{{ comment.content }} - до посту {{ comment.post.id }} о {{ comment.timestamp }}</li>
     {% endfor %}
 </ul>
 
