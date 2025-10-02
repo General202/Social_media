@@ -1,0 +1,82 @@
+/* Загальний контейнер */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    background: #f5f6fa;
+}
+
+/* Карточка */
+.auth-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Заголовки */
+.auth-card h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Форма */
+.auth-form .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+.auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.auth-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Кнопка */
+.btn-auth {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+.btn-auth:hover {
+    background: #0056b3;
+}
+.btn-auth.logout {
+    background: #dc3545;
+}
+.btn-auth.logout:hover {
+    background: #b52a37;
+}
+
+/* Футер */
+.auth-footer {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+}
+.auth-footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+.auth-footer a:hover {
+    text-decoration: underline;
+}

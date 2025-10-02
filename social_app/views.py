@@ -12,13 +12,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 
 
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(TemplateView):
     template_name = 'base.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['posts'] = Post.objects.all().order_by('-timestamp')
-        context['notifications'] = self.request.user.notifications.filter(read=False)
+        if self.request.user.is_authenticated:
+            context['notifications'] = self.request.user.notifications.filter(read=False)
         return context
     
 
@@ -31,13 +32,30 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
         context['posts'] = Post.objects.filter(author=profile_user).order_by('-timestamp')
-        context['is_friend'] = Friendship.objects.filter(
-            (Q(user1=self.request.user) & Q(user2=profile_user)) |
-            (Q(user1=profile_user) & Q(user2=self.request.user))
-        ).exists()
-        context['friend_requests_sent'] = FriendRequest.objects.filter(sender=self.request.user, recipient=profile_user).exists()
-        context['friend_requests_received'] = FriendRequest.objects.filter(sender=profile_user, recipient=self.request.user).exists()
+
+        if self.request.user.is_authenticated:
+            context['is_friend'] = Friendship.objects.filter(
+                (Q(user1=self.request.user) & Q(user2=profile_user)) |
+                (Q(user1=profile_user) & Q(user2=self.request.user))
+            ).exists()
+            context['friend_requests_sent'] = FriendRequest.objects.filter(sender=self.request.user, recipient=profile_user).exists()
+            context['friend_requests_received'] = FriendRequest.objects.filter(sender=profile_user, recipient=self.request.user).exists()
+        else:
+            context['is_friend'] = False
+            context['friend_requests_sent'] = False
+            context['friend_requests_received'] = False
+
         return context
+    
+
+class EditProfileView(LoginRequiredMixin, UpdateView):
+    model = CustomUser
+    fields = ['bio', 'cover_image', 'profile_image', 'birth_date']  # Можеш додати інші
+    template_name = 'message/edit_profile.html'
+    success_url = reverse_lazy('home')  # або назад на profile
+
+    def get_object(self):
+        return self.request.user
     
 
 class MessageListView(LoginRequiredMixin, ListView):

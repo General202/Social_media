@@ -1,21 +1,68 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<h1>Профіль користувача {{ user.username }}</h1>
-<p>{{ cover_image }}</p>
-<p>Дата приєднання: {{ user.date_joined }}</p>
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
+<div class="profile-container">
 
-<h2>Пости</h2>
-<ul>
-    {% for post in user.posts.all %}
-        <li>{{ post.content }} - о {{ post.timestamp }}</li>
-    {% endfor %}
-</ul>
+    <!-- Фото + ім'я -->
+    <div class="profile-header">
+        {% if profile_user.profile_image %}
+            <img src="{{ profile_user.profile_image.url }}" alt="Profile Image" class="profile-avatar">
+        {% else %}
+            <div class="profile-avatar placeholder">👤</div>
+        {% endif %}
+        <h1 class="profile-username">{{ profile_user.username }}</h1>
+    </div>
 
-<h2>Друзі</h2>
-<ul>
-    {% for friend in user.user_groups.all %}
-        <li>{{ friend.name }}</li>
-    {% endfor %}
-</ul>
+    <!-- Інфо -->
+    <div class="profile-info">
+        <p><strong>Дата приєднання:</strong> {{ profile_user.date_joined|date:"d.m.Y" }}</p>
+
+        {% if profile_user.birth_date %}
+            <p><strong>Дата народження:</strong> {{ profile_user.birth_date|date:"d.m.Y" }}</p>
+        {% endif %}
+
+        {% if profile_user.bio %}
+            <p><strong>Про себе:</strong> {{ profile_user.bio }}</p>
+        {% endif %}
+
+        {% if user == profile_user %}
+            <a href="{% url 'edit_profile' %}" class="btn-edit">✏️ Редагувати профіль</a>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <!-- Пости -->
+    <div class="profile-section">
+        <h2>📝 Пости</h2>
+        <ul class="post-list">
+            {% for post in posts %}
+                <li class="post-item">
+                    <p>{{ post.content }}</p>
+                    <span class="post-date">{{ post.timestamp|date:"d.m.Y H:i" }}</span>
+                </li>
+            {% empty %}
+                <li class="empty">Немає постів</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <hr>
+
+    <!-- Друзі -->
+    <div class="profile-section">
+        <h2>👥 Друзі</h2>
+        <ul class="friends-list">
+            {% if is_friend %}
+                <li>Ви друзі ✅</li>
+            {% else %}
+                <li>Немає друзів</li>
+            {% endif %}
+        </ul>
+    </div>
+
+</div>
+
 {% endblock %}

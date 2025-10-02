@@ -122,6 +122,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+LOGIN_URL = '/auth/login/'        # куди перенаправляти, якщо не авторизований
+LOGIN_REDIRECT_URL = '/'          # куди перенаправляти після логіну
+LOGOUT_REDIRECT_URL = '/'         # куди перенаправляти після логауту
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
