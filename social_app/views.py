@@ -6,20 +6,22 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.shortcuts import get_object_or_404, redirect
 
 from auth_system.models import CustomUser
+from social_app.forms import CommentForm, PostForm
 from .models import Post, Comment, Like, FriendRequest, Friendship, Message, Notification
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 
 
-class HomeView(TemplateView):
-    template_name = 'base.html'
+class HomeView(ListView):
+    model = Post
+    template_name = 'home.html'
+    context_object_name = 'posts'
+    ordering = ['-timestamp']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['posts'] = Post.objects.all().order_by('-timestamp')
-        if self.request.user.is_authenticated:
-            context['notifications'] = self.request.user.notifications.filter(read=False)
+        context['form'] = CommentForm()
         return context
     
 
@@ -96,8 +98,8 @@ class NotificationListView(LoginRequiredMixin, ListView):
     
 
 class LikePostView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        post = get_object_or_404(Post, pk=kwargs['pk'])
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
         like, created = Like.objects.get_or_create(post=post, user=request.user)
         if not created:
             like.delete()
@@ -137,7 +139,7 @@ class RemoveFriendView(LoginRequiredMixin, View):
     
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['content', 'image']
+    form_class = PostForm
     template_name = 'post/post_create.html'
     success_url = reverse_lazy('home')
 
@@ -155,28 +157,15 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return post.author == self.request.user
     
 class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comment
-    fields = ['content']
-    template_name = 'comment/comment_create.html'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('home')
-    
-class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Comment
-    template_name = 'comment/comment_delete.html'
-
-    def test_func(self):
-        comment = self.get_object()
-        return comment.author == self.request.user
-
-    def get_success_url(self):
-        return reverse('home')
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+        return redirect('home')
     
 class NotificationReadView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):

@@ -13,29 +13,36 @@ class Message(models.Model):
 class Post(models.Model):
     author = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='posts')
     group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
-    content = models.TextField()
+    content = models.TextField('Контент посту', blank=True)
     image = models.ImageField(upload_to='post_images/', null=True, blank=True)
+    video = models.FileField(upload_to='post_videos/', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def total_likes(self):
+        return self.likes.count()
+
     def __str__(self):
-        return f'Пост від {self.author} о {self.timestamp}'
+        return f"Пост {self.author.username} — {self.content[:30]}"
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Коментар від {self.author} до посту {self.post.id} о {self.timestamp}'
+        return f"{self.author.username}: {self.content[:20]}"
     
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'post')
+
     def __str__(self):
-        return f'Лайк від {self.user} до посту {self.post.id} о {self.timestamp}'
+         return f"{self.user.username} ❤️ {self.post.id}"
     
 class FriendRequest(models.Model):
     sender = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='sent_friend_requests')
