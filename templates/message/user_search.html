@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h3 class="mb-3">🔍 Пошук користувачів</h3>
+    <form method="get" action="{% url 'user_search' %}" class="d-flex mb-4">
+        <input type="text" name="q" class="form-control me-2" placeholder="Введіть нікнейм..."
+               value="{{ query|default:'' }}">
+        <button class="btn btn-primary" type="submit">Пошук</button>
+    </form>
+
+    {% if users %}
+        {% for user in users %}
+            <div class="card mb-3 p-3 d-flex flex-row align-items-center justify-content-between">
+                <span>@{{ user.username }}</span>
+
+                {% if user != request.user %}
+                    <form action="{% url 'add_friend' user.id %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-success">Додати в друзі</button>
+                    </form>
+                {% else %}
+                    <span class="text-muted">Це ви 😅</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% elif query %}
+        <p class="text-muted">Нічого не знайдено за запитом <strong>{{ query }}</strong></p>
+    {% endif %}
+</div>
+{% endblock %}

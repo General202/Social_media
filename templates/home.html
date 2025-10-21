@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="uk">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <title>Головна сторінка</title>
 </head>
 
@@ -46,6 +48,10 @@
                             <a class="nav-link" href="{% url 'register' %}">Реєстрація</a>
                         </li>
                         {% endif %}
+                        <form class="d-flex" role="search">
+                            <input class="form-control me-2" type="search" placeholder="Пошук" aria-label="Search" />
+                            <button class="btn btn-outline-success" type="submit" formaction="{% url 'user_search' %}">Пошук</button>
+                        </form>
                     </ul>
 
                     <!-- Кнопка створення посту справа -->
@@ -66,8 +72,8 @@
                     <!-- Автор -->
                     <div class="d-flex align-items-center mb-2">
                         {% if post.author.profile_image %}
-                        <img src="{{ post.author.profile_image.url }}" alt="Avatar"
-                            class="rounded-circle me-2" width="40" height="40">
+                        <img src="{{ post.author.profile_image.url }}" alt="Avatar" class="rounded-circle me-2"
+                            width="40" height="40">
                         {% else %}
                         <div class="bg-secondary rounded-circle me-2" style="width:40px;height:40px;"></div>
                         {% endif %}
@@ -109,15 +115,25 @@
                 </div>
 
                 <!-- Коментарі -->
-                <div class="px-3 pb-3">
+                <div class="px-3 pb-3 comments">
                     <h6>Коментарі:</h6>
-                    {% for comment in post.comments.all %}
-                    <p><strong>{{ comment.author.username }}</strong>: {{ comment.content }}</p>
-                    <small class="text-muted">{{ comment.timestamp|date:"d.m.Y H:i" }}</small>
-                    <hr>
-                    {% empty %}
-                    <p>Немає коментарів.</p>
-                    {% endfor %}
+
+                    <div class="comment-list">
+                        {% if post.comments.count == 0 %}
+                        <p class="mb-1">Немає коментарів.</p>
+                        {% else %}
+                        {% for comment in post.comments.all %}
+                        <div class="comment-item mb-3 border-bottom pb-2">
+                            <div class="comment-content">
+                                <p class="mb-1">
+                                    <strong>{{ comment.author.username }}</strong>: {{ comment.content }}
+                                </p>
+                                <small class="text-muted">{{ comment.timestamp|date:"d.m.Y H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
 
                     {% if user.is_authenticated %}
                     <form action="{% url 'add_comment' post.pk %}" method="post" class="mt-2">
@@ -143,6 +159,33 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".comments").forEach(commentSection => {
+                const comments = commentSection.querySelectorAll(".comment-item");
+
+                // Якщо більше ніж 2 — ховаємо решту
+                if (comments.length > 2) {
+                    for (let i = 2; i < comments.length; i++) {
+                        comments[i].style.display = "none";
+                    }
+
+                    const showMoreBtn = document.createElement("button");
+                    showMoreBtn.className = "btn btn-link p-0 text-primary";
+                    showMoreBtn.textContent = "Показати більше коментарів";
+
+                    showMoreBtn.addEventListener("click", function () {
+                        for (let i = 2; i < comments.length; i++) {
+                            comments[i].style.display = "block";
+                        }
+                        showMoreBtn.remove();
+                    });
+
+                    commentSection.appendChild(showMoreBtn);
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

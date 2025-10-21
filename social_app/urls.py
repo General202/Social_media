@@ -8,4 +8,7 @@ urlpatterns = [
     path('post/new/', views.PostCreateView.as_view(), name='post_create'),
     path('post/<int:pk>/like/', views.LikePostView.as_view(), name='like_post'),
     path('post/<int:pk>/comment/', views.CommentCreateView.as_view(), name='add_comment'),
+    path('friend-request/accept/<int:user_id>/', views.AcceptFriendRequestView.as_view(), name='accept_friend_request'),
+    path('friend/remove/<int:user_id>/', views.RemoveFriendView.as_view(), name='remove_friend'),
+    path('search/users/', views.UserSearchView.as_view(), name='user_search'),
 ]

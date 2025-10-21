@@ -1,0 +1,29 @@
+body {
+        background-color: #f5f6f8;
+    }
+
+    .posts-container {
+        max-width: 700px; /* обмеження ширини стрічки */
+        margin: 0 auto; /* центрування */
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+    }
+
+    .card-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .navbar {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    footer {
+        background: transparent;
+        color: #777;
+    }

@@ -10,6 +10,7 @@ class Message(models.Model):
     def __str__(self):
         return f'Повідомлення від {self.sender} до {self.recipient} о {self.timestamp}'
     
+
 class Post(models.Model):
     author = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='posts')
     group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
@@ -24,6 +25,7 @@ class Post(models.Model):
     def __str__(self):
         return f"Пост {self.author.username} — {self.content[:30]}"
     
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE)
@@ -33,6 +35,7 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.author.username}: {self.content[:20]}"
     
+
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE)
@@ -42,28 +45,32 @@ class Like(models.Model):
         unique_together = ('user', 'post')
 
     def __str__(self):
-         return f"{self.user.username} ❤️ {self.post.id}"
+         return f"{self.user.username} ❤️ {self.post.id}"  
     
+
+class Friendship(models.Model):
+    from_user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='friendships_initiated')
+    to_user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='friendships_received')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f'Дружба між {self.from_user} та {self.to_user}'
+
 class FriendRequest(models.Model):
     sender = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='sent_friend_requests')
     recipient = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='received_friend_requests')
     timestamp = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f'Запит у друзі від {self.sender} до {self.recipient} о {self.timestamp}'
-    
-class Friendship(models.Model):
-    user1 = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='friendships_initiated')
-    user2 = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='friendships_received')
-    timestamp = models.DateTimeField(auto_now_add=True)
-
     class Meta:
-        unique_together = ('user1', 'user2')
+        unique_together = ('sender', 'recipient')
 
     def __str__(self):
-        return f'Дружба між {self.user1} та {self.user2} з {self.timestamp}'
-    
+        return f'Запит на дружбу від {self.sender} до {self.recipient}'
+
 class Notification(models.Model):
     user = models.ForeignKey('auth_system.CustomUser', on_delete=models.CASCADE, related_name='notifications')
     content = models.CharField(max_length=255)
@@ -73,6 +80,7 @@ class Notification(models.Model):
     def __str__(self):
         return f'Сповіщення для {self.user} о {self.timestamp}'
     
+
 class Group(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
