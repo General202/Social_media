@@ -108,6 +108,7 @@ class LikePostView(LoginRequiredMixin, View):
         return redirect('home')
     
 class UserSearchView(LoginRequiredMixin, TemplateView):
+    template_name = 'message/user_search.html'
     def post(self, request):
         query = request.GET.get('q')
         users = CustomUser.objects.filter(username__icontains=query) if query else []
