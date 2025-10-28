@@ -37,8 +37,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         if self.request.user.is_authenticated:
             context['is_friend'] = Friendship.objects.filter(
-                (Q(user1=self.request.user) & Q(user2=profile_user)) |
-                (Q(user1=profile_user) & Q(user2=self.request.user))
+                (Q(from_user=self.request.user) & Q(to_user=profile_user)) |
+                (Q(from_user=profile_user) & Q(to_user=self.request.user))
             ).exists()
             context['friend_requests_sent'] = FriendRequest.objects.filter(sender=self.request.user, recipient=profile_user).exists()
             context['friend_requests_received'] = FriendRequest.objects.filter(sender=profile_user, recipient=self.request.user).exists()

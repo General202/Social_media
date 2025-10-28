@@ -14,7 +14,7 @@
                 <span>@{{ user.username }}</span>
 
                 {% if user != request.user %}
-                    <form action="{% url 'add_friend' user.id %}" method="post">
+                    <form action="" method="post">
                         {% csrf_token %}
                         <button class="btn btn-sm btn-success">Додати в друзі</button>
                     </form>

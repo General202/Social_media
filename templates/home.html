@@ -48,9 +48,9 @@
                             <a class="nav-link" href="{% url 'register' %}">Реєстрація</a>
                         </li>
                         {% endif %}
-                        <form class="d-flex" role="search">
-                            <input class="form-control me-2" type="search" placeholder="Пошук" aria-label="Search" />
-                            <button class="btn btn-outline-success" type="submit" formaction="{% url 'user_search' %}">Пошук</button>
+                        <form action="{% url 'user_search' %}" class="d-flex" role="search">
+                            <input required name="q" class="form-control me-2" type="search" placeholder="Пошук" aria-label="Search" />
+                            <button class="btn btn-outline-success" type="submit">Пошук</button>
                         </form>
                     </ul>
 
