@@ -49,7 +49,8 @@
                         </li>
                         {% endif %}
                         <form action="{% url 'user_search' %}" class="d-flex" role="search">
-                            <input required name="q" class="form-control me-2" type="search" placeholder="Пошук" aria-label="Search" />
+                            <input required name="query" class="form-control me-2" type="search" placeholder="Пошук"
+                                aria-label="Search" />
                             <button class="btn btn-outline-success" type="submit">Пошук</button>
                         </form>
                     </ul>
@@ -100,7 +101,7 @@
                 <!-- Лайки та коментарі -->
                 <div class="card-footer bg-white border-0 d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <form action="{% url 'like_post' post.pk %}" method="post" class="me-3">
+                        <form action="{% url 'like_post' post.pk %}" method="post" class="like-form me-3">
                             {% csrf_token %}
                             {% if user.is_authenticated %}
                             <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -161,10 +162,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+
+            // --- Показати більше коментарів ---
             document.querySelectorAll(".comments").forEach(commentSection => {
                 const comments = commentSection.querySelectorAll(".comment-item");
-
-                // Якщо більше ніж 2 — ховаємо решту
                 if (comments.length > 2) {
                     for (let i = 2; i < comments.length; i++) {
                         comments[i].style.display = "none";
@@ -173,17 +174,49 @@
                     const showMoreBtn = document.createElement("button");
                     showMoreBtn.className = "btn btn-link p-0 text-primary";
                     showMoreBtn.textContent = "Показати більше коментарів";
-
                     showMoreBtn.addEventListener("click", function () {
                         for (let i = 2; i < comments.length; i++) {
                             comments[i].style.display = "block";
                         }
                         showMoreBtn.remove();
                     });
-
                     commentSection.appendChild(showMoreBtn);
                 }
             });
+
+            // --- AJAX лайки ---
+            document.querySelectorAll('form[action*="like_post"]').forEach(form => {
+                form.addEventListener("submit", async function (event) {
+                    event.preventDefault();
+
+                    const url = this.action;
+                    const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+                    const likeButton = this.querySelector("button");
+
+                    likeButton.disabled = true;
+
+                    try {
+                        const response = await fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": csrfToken,
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                        });
+
+                        if (!response.ok) throw new Error("Помилка при відправці лайку");
+
+                        const data = await response.json();
+                        likeButton.innerHTML = data.liked ? `❤️ ${data.likes}` : `🤍 ${data.likes}`;
+                    } catch (error) {
+                        console.error(error);
+                        alert("Сталася помилка при обробці лайку 😢");
+                    } finally {
+                        likeButton.disabled = false;
+                    }
+                });
+            });
+
         });
     </script>
 </body>

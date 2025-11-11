@@ -3,7 +3,7 @@
 <div class="container mt-4" style="max-width: 600px;">
     <h3 class="mb-3">🔍 Пошук користувачів</h3>
     <form method="get" action="{% url 'user_search' %}" class="d-flex mb-4">
-        <input type="text" name="q" class="form-control me-2" placeholder="Введіть нікнейм..."
+        <input type="text" name="query" class="form-control me-2" placeholder="Введіть нікнейм..."
                value="{{ query|default:'' }}">
         <button class="btn btn-primary" type="submit">Пошук</button>
     </form>
@@ -14,11 +14,11 @@
                 <span>@{{ user.username }}</span>
 
                 {% if user != request.user %}
-                    <form action="" method="post">
+                    <form action="{% url 'create_friend_request' user.id %}" method="post">
                         {% csrf_token %}
                         <button class="btn btn-sm btn-success">Додати в друзі</button>
                     </form>
-                {% else %}
+                {% elif user == request.user %}
                     <span class="text-muted">Це ви 😅</span>
                 {% endif %}
             </div>

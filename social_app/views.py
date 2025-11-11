@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
@@ -34,18 +35,17 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
         context['posts'] = Post.objects.filter(author=profile_user).order_by('-timestamp')
+        context['friends'] = Friendship.objects.filter(Q(from_user=profile_user) | Q(to_user=profile_user))
 
         if self.request.user.is_authenticated:
             context['is_friend'] = Friendship.objects.filter(
                 (Q(from_user=self.request.user) & Q(to_user=profile_user)) |
                 (Q(from_user=profile_user) & Q(to_user=self.request.user))
             ).exists()
-            context['friend_requests_sent'] = FriendRequest.objects.filter(sender=self.request.user, recipient=profile_user).exists()
-            context['friend_requests_received'] = FriendRequest.objects.filter(sender=profile_user, recipient=self.request.user).exists()
         else:
             context['is_friend'] = False
-            context['friend_requests_sent'] = False
-            context['friend_requests_received'] = False
+            context['friend_requests_sent'] = FriendRequest.objects.filter(sender=self.request.user, recipient=profile_user).exists()
+            context['friend_requests_received'] = FriendRequest.objects.filter(sender=profile_user, recipient=self.request.user).exists()
 
         return context
     
@@ -103,14 +103,27 @@ class LikePostView(LoginRequiredMixin, View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         like, created = Like.objects.get_or_create(post=post, user=request.user)
+        
         if not created:
             like.delete()
+            liked = False
+        else:
+            liked = True
+
+        # Якщо запит AJAX — повертаємо JSON, інакше — редірект
+        if request.headers.get("x-requested-with") == "XMLHttpRequest" or \
+           request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest":
+            return JsonResponse({
+                "likes": post.likes.count(),
+                "liked": liked,
+            })
+        
         return redirect('home')
     
 class UserSearchView(LoginRequiredMixin, TemplateView):
     template_name = 'message/user_search.html'
-    def post(self, request):
-        query = request.GET.get('q')
+    def get(self, request):
+        query = request.GET.get('query')
         users = CustomUser.objects.filter(username__icontains=query) if query else []
         return render(request, 'message/user_search.html', {'users': users, 'query': query})
 
@@ -120,7 +133,16 @@ class AcceptFriendRequestView(LoginRequiredMixin, View):
         Friendship.objects.get_or_create(from_user=request.user, to_user=to_user)
         return redirect('profile', pk=to_user.pk)
     
-
+class CreateFriendRequestView(LoginRequiredMixin, View):
+    def post(self, request, user_id):
+        to_user = get_object_or_404(CustomUser, pk=user_id)
+        is_requested = FriendRequest.objects.filter(recipient=request.user, sender=to_user).exists()
+        if not is_requested:
+            FriendRequest.objects.get_or_create(sender=request.user, recipient=to_user)
+        else:
+            Friendship.objects.get_or_create(from_user=request.user, to_user=to_user)
+        return redirect('profile', pk=to_user.pk)
+    
 class RemoveFriendView(LoginRequiredMixin, View):
     def post(self, request, user_id):
         to_user = get_object_or_404(CustomUser, pk=user_id)
