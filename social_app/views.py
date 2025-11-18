@@ -35,7 +35,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
         context['posts'] = Post.objects.filter(author=profile_user).order_by('-timestamp')
-        context['friends'] = Friendship.objects.filter(Q(from_user=profile_user) | Q(to_user=profile_user))
+        context['friends'] = Friendship.objects.filter(Q(from_user=profile_user) | Q(to_user=profile_user)).select_related('from_user', 'to_user')
 
         if self.request.user.is_authenticated:
             context['is_friend'] = Friendship.objects.filter(

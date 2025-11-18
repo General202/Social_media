@@ -59,7 +59,11 @@
                 <li>Ви друзі ✅</li>
             {% endif %}
             {% for friend in friends %}
-                <li>@{{ friend.username }}</li>   
+                {% if friend.from_user == profile_user %}
+                    <li>@{{ friend.to_user.username }}</li>
+                {% else %}
+                    <li>@{{ friend.from_user.username }}</li>
+                {% endif %}
             {% empty %}
                 <li>Немає друзів</li>
             {% endfor %}
