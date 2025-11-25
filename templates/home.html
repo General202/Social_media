@@ -12,65 +12,16 @@
 </head>
 
 <body>
+    {% include 'header.html' %}
     {% block content %}
     <main class="container mt-4">
 
-        <!-- Навбар -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm rounded">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" href="#">Social Danik</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Перемикач навігації">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="{% url 'home' %}">Головна</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Повідомлення</a>
-                        </li>
-
-                        {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' user.pk %}">Профіль</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Вихід</a>
-                        </li>
-                        {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Увійти</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Реєстрація</a>
-                        </li>
-                        {% endif %}
-                        <form action="{% url 'user_search' %}" class="d-flex" role="search">
-                            <input required name="query" class="form-control me-2" type="search" placeholder="Пошук"
-                                aria-label="Search" />
-                            <button class="btn btn-outline-success" type="submit">Пошук</button>
-                        </form>
-                    </ul>
-
-                    <!-- Кнопка створення посту справа -->
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'post_create' %}" class="btn btn-primary d-flex align-items-center gap-1">
-                        <i class="bi bi-plus-circle"></i> Створити пост
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </nav>
-
-        <!-- Список постів -->
         <div class="posts-container">
             {% for post in posts %}
             <div class="card mb-4 shadow-sm">
                 <div class="card-body">
-                    <!-- Автор -->
                     <div class="d-flex align-items-center mb-2">
                         {% if post.author.profile_image %}
                         <img src="{{ post.author.profile_image.url }}" alt="Avatar" class="rounded-circle me-2"
@@ -81,7 +32,6 @@
                         <h5 class="mb-0">{{ post.author.username }}</h5>
                     </div>
 
-                    <!-- Контент -->
                     <p class="card-text">{{ post.content }}</p>
 
                     {% if post.image %}
@@ -94,11 +44,9 @@
                     </video>
                     {% endif %}
 
-                    <!-- Дата -->
                     <small class="text-muted">{{ post.timestamp|date:"d.m.Y H:i" }}</small>
                 </div>
 
-                <!-- Лайки та коментарі -->
                 <div class="card-footer bg-white border-0 d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <form action="{% url 'like_post' post.pk %}" method="post" class="like-form me-3">
@@ -115,7 +63,6 @@
                     </div>
                 </div>
 
-                <!-- Коментарі -->
                 <div class="px-3 pb-3 comments">
                     <h6>Коментарі:</h6>
 
@@ -163,7 +110,6 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // --- Показати більше коментарів ---
             document.querySelectorAll(".comments").forEach(commentSection => {
                 const comments = commentSection.querySelectorAll(".comment-item");
                 if (comments.length > 2) {
@@ -184,8 +130,7 @@
                 }
             });
 
-            // --- AJAX лайки ---
-            document.querySelectorAll('form[action*="like_post"]').forEach(form => {
+            document.querySelectorAll('.like-form').forEach(form => {
                 form.addEventListener("submit", async function (event) {
                     event.preventDefault();
 
@@ -210,7 +155,7 @@
                         likeButton.innerHTML = data.liked ? `❤️ ${data.likes}` : `🤍 ${data.likes}`;
                     } catch (error) {
                         console.error(error);
-                        alert("Сталася помилка при обробці лайку 😢");
+                        alert("Сталася помилка при обробці лайку");
                     } finally {
                         likeButton.disabled = false;
                     }
