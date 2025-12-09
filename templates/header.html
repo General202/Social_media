@@ -12,7 +12,7 @@
                             <a class="nav-link active" href="{% url 'home' %}">Головна</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Повідомлення</a>
+                            <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
                         </li>
 
                         {% if user.is_authenticated %}

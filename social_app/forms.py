@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Post, Comment
+from .models import Post, Comment, Group
 
 class PostForm(forms.ModelForm):
     class Meta:
@@ -24,4 +24,23 @@ class CommentForm(forms.ModelForm):
                 'placeholder': 'Напишіть коментар...',
                 'rows': 2
             })
+        }
+
+class GroupCreateForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'description', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Назва групи'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Опис групи',
+                'rows': 3
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file'
+            }),
         }

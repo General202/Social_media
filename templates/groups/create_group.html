@@ -1,0 +1,36 @@
+{% extends 'home.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block content %}
+<main class="container mt-5">
+    <div class="posts-container">
+
+        <div class="card p-4 shadow-sm">
+            <h3 class="mb-3 text-center">Створити групу</h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Назва групи</label>
+                    {{ form.name|add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Опис</label>
+                    {{ form.description|add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Зображення групи</label>
+                    {{ form.image|add_class:"form-control" }}
+                </div>
+
+                <button class="btn btn-success w-100 mt-3">Створити</button>
+            </form>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

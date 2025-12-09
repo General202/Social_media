@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 
 # Create your views here.
@@ -7,8 +7,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.shortcuts import get_object_or_404, redirect
 
 from auth_system.models import CustomUser
-from social_app.forms import CommentForm, PostForm
-from .models import Post, Comment, Like, FriendRequest, Friendship, Message, Notification
+from social_app.forms import CommentForm, PostForm, GroupCreateForm
+from .models import Post, Comment, Like, FriendRequest, Friendship, Message, Notification, Group
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
@@ -188,6 +188,96 @@ class NotificationReadView(LoginRequiredMixin, View):
         notification.read = True
         notification.save()
         return redirect('notifications')
+    
+class GroupListView(LoginRequiredMixin, ListView):
+    model = Group
+    template_name = 'groups/group_list.html'
+    context_object_name = 'all_groups'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q', '')
+        return Group.objects.filter(name__icontains=query)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['my_groups'] = self.request.user.user_groups.all()
+        context['query'] = self.request.GET.get('q', '')
+        return context
+    
+
+class GroupCreateView(LoginRequiredMixin, CreateView):
+    model = Group
+    form_class = GroupCreateForm
+    template_name = 'groups/create_group.html'
+
+    def form_valid(self, form):
+        group = form.save(commit=False)
+        group.owner = self.request.user
+        group.save()
+
+        # автоматично додаємо створювача в members
+        group.members.add(self.request.user)
+
+        return redirect('group_detail', group.id)
+
+
+class GroupDetailView(LoginRequiredMixin, DetailView):
+    model = Group
+    template_name = 'groups/group_detail.html'
+    context_object_name = 'group'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        group = self.get_object()
+
+        context['posts'] = Post.objects.filter(group=group).order_by('-timestamp')
+        context['is_member'] = self.request.user in group.members.all()
+
+        return context
+
+
+class JoinGroupView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        group.members.add(request.user)
+        return redirect('group_detail', pk)
+
+
+class LeaveGroupView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        group.members.remove(request.user)
+        return redirect('group_detail', pk)
+
+
+class GroupPostCreateView(LoginRequiredMixin, View):
+    template_name = 'groups/create_post.html'
+
+    def get(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+
+        if request.user not in group.members.all():
+            return HttpResponseForbidden("Ви не учасник групи")
+
+        form = PostForm()
+        return render(request, self.template_name, {"group": group, "form": form})
+
+    def post(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+
+        if request.user not in group.members.all():
+            return HttpResponseForbidden("Ви не учасник групи")
+
+        form = PostForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.group = group
+            post.save()
+            return redirect("group_detail", pk)
+        
+        return render(request, self.template_name, {"group": group, "form": form})
     
 
 

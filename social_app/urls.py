@@ -12,4 +12,10 @@ urlpatterns = [
     path('friend/remove/<int:user_id>/', views.RemoveFriendView.as_view(), name='remove_friend'),
     path('search/users/', views.UserSearchView.as_view(), name='user_search'),
     path('friend-request/create/<int:user_id>/', views.CreateFriendRequestView.as_view(), name='create_friend_request'),
+    path('groups/', views.GroupListView.as_view(), name='group_list'),
+    path('groups/create/', views.GroupCreateView.as_view(), name='create_group'),
+    path('groups/<int:pk>/', views.GroupDetailView.as_view(), name='group_detail'),
+    path('groups/<int:pk>/join/', views.JoinGroupView.as_view(), name='join_group'),
+    path('groups/<int:pk>/leave/', views.LeaveGroupView.as_view(), name='leave_group'),
+    path('groups/<int:pk>/post/create/', views.GroupPostCreateView.as_view(), name='create_group_post'),
 ]
